@@ -307,7 +307,7 @@ void main (void)
     draw_labels ();
 
     /* Draw the GUI elements with their current values */
-    for (uint8_t i = ELEMENT_CH0_VOLUME; i <= ELEMENT_CH0_VOLUME; i++)
+    for (uint8_t i = ELEMENT_CH0_VOLUME; i <= ELEMENT_NOISE_BUTTON; i++)
     {
         const gui_element_t *element = &gui_state.gui [i];
         uint16_t value = gui_state.element_values [i];
@@ -316,9 +316,17 @@ void main (void)
         {
             draw_value (element->x, element->y, value);
         }
+        else if (element->type == TYPE_VALUE_WIDE)
+        {
+            draw_value_wide (element->x, element->y, value);
+        }
         else if (element->type == TYPE_LED)
         {
             draw_led (element->x, element->y, value);
+        }
+        else if (element->type == TYPE_BUTTON)
+        {
+            draw_button (element->x, element->y, value);
         }
     }
 
