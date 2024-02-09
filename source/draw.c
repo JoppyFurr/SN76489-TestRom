@@ -215,7 +215,37 @@ void draw_keyboard_update (uint8_t key, bool active)
  */
 void draw_labels (void)
 {
-    /* TODO */
+    /* Tone configuration */
+    const uint16_t tone_channel_settings [] = {
+        PATTERN_LABELS +  0, PATTERN_LABELS +  1, PATTERN_LABELS +  2, PATTERN_LABELS +  3,
+        PATTERN_LABELS +  4, PATTERN_LABELS +  5, PATTERN_LABELS +  6, PATTERN_LABELS +  7,
+        PATTERN_LABELS +  8, PATTERN_LABELS +  9, PATTERN_LABELS + 10, PATTERN_LABELS + 11,
+        PATTERN_LABELS + 12, PATTERN_LABELS + 13, PATTERN_LABELS + 14, PATTERN_LABELS + 15,
+        PATTERN_LABELS + 16
+    };
+    SMS_loadTileMapArea (5,  5, tone_channel_settings,  17, 1);
+    SMS_loadTileMapArea (5,  8, tone_channel_settings,  17, 1);
+    SMS_loadTileMapArea (5, 11, tone_channel_settings,  17, 1);
+
+    /* Noise configuration */
+    const uint16_t noise_channel_settings [] = {
+        PATTERN_LABELS +  0, PATTERN_LABELS +  1, PATTERN_LABELS +  2, PATTERN_LABELS +  3,
+        PATTERN_LABELS +  4, PATTERN_LABELS +  5, PATTERN_LABELS +  6, PATTERN_LABELS +  7,
+        PATTERN_LABELS +  8, PATTERN_LABELS +  9, PATTERN_LABELS + 10, PATTERN_LABELS + 17,
+        PATTERN_LABELS + 18, PATTERN_LABELS + 19, PATTERN_LABELS + 20, PATTERN_LABELS + 21,
+        PATTERN_LABELS + 22
+    };
+    SMS_loadTileMapArea (5, 14, noise_channel_settings, 17, 1);
+
+    /* Buttons */
+    const uint16_t tone_1_button [] = { PATTERN_LABELS + 23, PATTERN_LABELS + 24, PATTERN_LABELS + 25 };
+    const uint16_t tone_2_button [] = { PATTERN_LABELS + 23, PATTERN_LABELS + 24, PATTERN_LABELS + 26 };
+    const uint16_t tone_3_button [] = { PATTERN_LABELS + 23, PATTERN_LABELS + 24, PATTERN_LABELS + 27 };
+    const uint16_t noise_button []  = { PATTERN_LABELS + 28, PATTERN_LABELS + 29, PATTERN_LABELS + 30 };
+    SMS_loadTileMapArea (26,  3, tone_1_button, 3, 1);
+    SMS_loadTileMapArea (26,  6, tone_2_button, 3, 1);
+    SMS_loadTileMapArea (26,  9, tone_3_button, 3, 1);
+    SMS_loadTileMapArea (26, 12, noise_button,  3, 1);
 }
 
 

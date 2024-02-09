@@ -39,6 +39,7 @@ build_sn76489_test_rom ()
             tiles/digits.png \
             tiles/footer.png \
             tiles/keys.png \
+            tiles/labels.png \
             tiles/led.png \
             tiles/title.png
     )
