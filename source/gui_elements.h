@@ -170,6 +170,7 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_NOISE_CONST_MODE] = {
         .type = TYPE_LED, .max = 1,
         .x = 13, .y = 13, .width = 2, .height = 2,
+        .callback = register_write_noise_control,
         .up   = ELEMENT_CH2_CONST_MODE,         .down  = ELEMENT_KEYBOARD,
         .left = ELEMENT_NOISE_KEYBOARD_MODE,    .right = ELEMENT_NOISE_CONTROL
     },
