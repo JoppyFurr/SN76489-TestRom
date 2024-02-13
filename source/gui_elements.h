@@ -56,12 +56,20 @@ typedef struct gui_element_s {
 
 } gui_element_t;
 
+static void value_set_ch0_volume (uint16_t value);
+static void value_set_ch0_key (uint16_t value);
+static void value_set_ch1_volume (uint16_t value);
+static void value_set_ch1_key (uint16_t value);
+static void value_set_ch2_volume (uint16_t value);
+static void value_set_ch2_key (uint16_t value);
+static void value_set_noise_volume (uint16_t value);
+static void value_set_noise_key (uint16_t value);
 
 static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_CH0_VOLUME] = {
         .type = TYPE_VALUE, .max = 15,
         .x = 5, .y = 3, .width = 2, .height = 3,
-        .callback = register_write_ch0_volume,
+        .callback = value_set_ch0_volume,
         .up   = ELEMENT_CH0_VOLUME,             .down  = ELEMENT_CH1_VOLUME,
         .left = ELEMENT_CH0_VOLUME,             .right = ELEMENT_CH0_KEYBOARD_MODE
     },
@@ -87,13 +95,14 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_CH0_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 3, .width = 6, .height = 2,
+        .callback = value_set_ch0_key,
         .up   = ELEMENT_CH0_BUTTON,             .down  = ELEMENT_CH1_BUTTON,
         .left = ELEMENT_CH0_FREQUENCY,          .right = ELEMENT_CH0_BUTTON
     },
     [ELEMENT_CH1_VOLUME] = {
         .type = TYPE_VALUE, .max = 15,
         .x = 5, .y = 6, .width = 2, .height = 3,
-        .callback = register_write_ch1_volume,
+        .callback = value_set_ch1_volume,
         .up   = ELEMENT_CH0_VOLUME,             .down  = ELEMENT_CH2_VOLUME,
         .left = ELEMENT_CH1_VOLUME,             .right = ELEMENT_CH1_KEYBOARD_MODE
     },
@@ -119,13 +128,14 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_CH1_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 6, .width = 6, .height = 2,
+        .callback = value_set_ch1_key,
         .up   = ELEMENT_CH0_BUTTON,             .down  = ELEMENT_CH2_BUTTON,
         .left = ELEMENT_CH1_FREQUENCY,          .right = ELEMENT_CH1_BUTTON
     },
     [ELEMENT_CH2_VOLUME] = {
         .type = TYPE_VALUE, .max = 15,
         .x = 5, .y = 9, .width = 2, .height = 3,
-        .callback = register_write_ch2_volume,
+        .callback = value_set_ch2_volume,
         .up   = ELEMENT_CH1_VOLUME,             .down  = ELEMENT_NOISE_VOLUME,
         .left = ELEMENT_CH2_VOLUME,             .right = ELEMENT_CH2_KEYBOARD_MODE
     },
@@ -151,13 +161,14 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_CH2_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 9, .width = 6, .height = 2,
+        .callback = value_set_ch2_key,
         .up   = ELEMENT_CH1_BUTTON,             .down  = ELEMENT_NOISE_BUTTON,
         .left = ELEMENT_CH2_FREQUENCY,          .right = ELEMENT_CH2_BUTTON
     },
     [ELEMENT_NOISE_VOLUME] = {
         .type = TYPE_VALUE, .max = 15,
         .x = 5, .y = 12, .width = 2, .height = 3,
-        .callback = register_write_noise_volume,
+        .callback = value_set_noise_volume,
         .up   = ELEMENT_CH2_VOLUME,             .down  = ELEMENT_KEYBOARD,
         .left = ELEMENT_NOISE_VOLUME,           .right = ELEMENT_NOISE_KEYBOARD_MODE
     },
@@ -184,6 +195,7 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
     [ELEMENT_NOISE_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 12, .width = 6, .height = 2,
+        .callback = value_set_noise_key,
         .up   = ELEMENT_CH2_BUTTON,             .down  = ELEMENT_KEYBOARD,
         .left = ELEMENT_NOISE_CONTROL,          .right = ELEMENT_NOISE_BUTTON
     },
