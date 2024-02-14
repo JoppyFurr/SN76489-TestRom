@@ -22,26 +22,63 @@ typedef struct channel_state_s {
     bool key_on;
 } channel_state_t;
 
+
 /* Update tone channel 0 volume. */
 void key_set_ch0_volume (uint16_t value);
 
-/* Update tone channel 0 key. */
-void key_set_ch0_key (uint16_t value);
+/* Set tone channel 0 to keyboard-mode. */
+void key_set_ch0_mode_keyboard (uint16_t value);
+
+/* Set tone channel 0 to constant-mode. */
+void key_set_ch0_mode_constant (uint16_t value);
+
+/* Update tone channel 0 frequency. */
+void key_set_ch0_frequency (uint16_t value);
+
+/* Update tone channel 0 momentary button. */
+void key_set_ch0_button (uint16_t value);
 
 /* Update tone channel 1 volume. */
 void key_set_ch1_volume (uint16_t value);
 
-/* Update tone channel 1 key. */
-void key_set_ch1_key (uint16_t value);
+/* Set tone channel 1 to keyboard-mode. */
+void key_set_ch1_mode_keyboard (uint16_t value);
+
+/* Set tone channel 1 to constant-mode. */
+void key_set_ch1_mode_constant (uint16_t value);
+
+/* Update tone channel 1 frequency. */
+void key_set_ch1_frequency (uint16_t value);
+
+/* Update tone channel 1 momentary button. */
+void key_set_ch1_button (uint16_t value);
 
 /* Update tone channel 2 volume. */
 void key_set_ch2_volume (uint16_t value);
 
-/* Update tone channel 2 key. */
-void key_set_ch2_key (uint16_t value);
+/* Set tone channel 2 to keyboard-mode. */
+void key_set_ch2_mode_keyboard (uint16_t value);
+
+/* Set tone channel 2 to constant-mode. */
+void key_set_ch2_mode_constant (uint16_t value);
+
+/* Update tone channel 2 frequency. */
+void key_set_ch2_frequency (uint16_t value);
+
+/* Update tone channel 2 momentary button. */
+void key_set_ch2_button (uint16_t value);
 
 /* Update noise channel volume. */
 void key_set_noise_volume (uint16_t value);
 
-/* Update noise channel key. */
-void key_set_noise_key (uint16_t value);
+/* Set noise channel to keyboard-mode. */
+void key_set_noise_mode_keyboard (uint16_t value);
+
+/* Set noise channel to constant-mode. */
+void key_set_noise_mode_constant (uint16_t value);
+
+/* Update noise control register. */
+void key_set_noise_control (uint16_t value);
+
+/* Update noise channel momentary button. */
+void key_set_noise_button (uint16_t value);

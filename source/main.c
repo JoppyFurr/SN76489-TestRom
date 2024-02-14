@@ -37,23 +37,23 @@ typedef struct gui_state_s {
 
 static const uint16_t value_defaults [ELEMENT_COUNT] = {
     [ELEMENT_CH0_VOLUME] = 0,
-    [ELEMENT_CH0_KEYBOARD_MODE] = 1,
-    [ELEMENT_CH0_CONST_MODE] = 0,
+    [ELEMENT_CH0_MODE_KEYBOARD] = 1,
+    [ELEMENT_CH0_MODE_CONSTANT] = 0,
     [ELEMENT_CH0_FREQUENCY] = 428,
     [ELEMENT_CH0_BUTTON] = 0,
     [ELEMENT_CH1_VOLUME] = 0,
-    [ELEMENT_CH1_KEYBOARD_MODE] = 0,
-    [ELEMENT_CH1_CONST_MODE] = 0,
+    [ELEMENT_CH1_MODE_KEYBOARD] = 0,
+    [ELEMENT_CH1_MODE_CONSTANT] = 0,
     [ELEMENT_CH1_FREQUENCY] = 339,
     [ELEMENT_CH1_BUTTON] = 0,
     [ELEMENT_CH2_VOLUME] = 0,
-    [ELEMENT_CH2_KEYBOARD_MODE] = 0,
-    [ELEMENT_CH2_CONST_MODE] = 0,
+    [ELEMENT_CH2_MODE_KEYBOARD] = 0,
+    [ELEMENT_CH2_MODE_CONSTANT] = 0,
     [ELEMENT_CH2_FREQUENCY] = 285,
     [ELEMENT_CH2_BUTTON] = 0,
     [ELEMENT_NOISE_VOLUME] = 0,
-    [ELEMENT_NOISE_KEYBOARD_MODE] = 0,
-    [ELEMENT_NOISE_CONST_MODE] = 0,
+    [ELEMENT_NOISE_MODE_KEYBOARD] = 0,
+    [ELEMENT_NOISE_MODE_CONSTANT] = 0,
     [ELEMENT_NOISE_CONTROL] = 4,
     [ELEMENT_NOISE_BUTTON] = 0,
 };
@@ -146,8 +146,8 @@ static void element_navigate (gui_state_t *state, uint16_t key_pressed)
         {
             case PORT_A_KEY_UP:
                 if      (state->keyboard_key < 7 ) state->current_element = ELEMENT_NOISE_VOLUME;
-                else if (state->keyboard_key < 11 ) state->current_element = ELEMENT_NOISE_KEYBOARD_MODE;
-                else if (state->keyboard_key < 16) state->current_element = ELEMENT_NOISE_CONST_MODE;
+                else if (state->keyboard_key < 11 ) state->current_element = ELEMENT_NOISE_MODE_KEYBOARD;
+                else if (state->keyboard_key < 16) state->current_element = ELEMENT_NOISE_MODE_CONSTANT;
                 else if (state->keyboard_key < 21) state->current_element = ELEMENT_NOISE_CONTROL;
                 else                               state->current_element = ELEMENT_NOISE_BUTTON;
                 state->cursor_update = true;
@@ -410,8 +410,49 @@ void main (void)
             const gui_element_t *element = &gui_state.gui [gui_state.current_element];
             uint16_t value = gui_state.element_values [gui_state.current_element];
 
-            element_update (element, value);
+            /* Special cases: Elements that affect other elements, such as changing mode. */
+            if (gui_state.current_element == ELEMENT_CH0_MODE_KEYBOARD && value)
+            {
+                gui_state.element_values [ELEMENT_CH0_MODE_CONSTANT] = false;
+                element_update (&gui_state.gui [ELEMENT_CH0_MODE_CONSTANT], false);
+            }
+            else if (gui_state.current_element == ELEMENT_CH0_MODE_CONSTANT && value)
+            {
+                gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD] = false;
+                element_update (&gui_state.gui [ELEMENT_CH0_MODE_KEYBOARD], false);
+            }
+            else if (gui_state.current_element == ELEMENT_CH1_MODE_KEYBOARD && value)
+            {
+                gui_state.element_values [ELEMENT_CH1_MODE_CONSTANT] = false;
+                element_update (&gui_state.gui [ELEMENT_CH1_MODE_CONSTANT], false);
+            }
+            else if (gui_state.current_element == ELEMENT_CH1_MODE_CONSTANT && value)
+            {
+                gui_state.element_values [ELEMENT_CH1_MODE_KEYBOARD] = false;
+                element_update (&gui_state.gui [ELEMENT_CH1_MODE_KEYBOARD], false);
+            }
+            else if (gui_state.current_element == ELEMENT_CH2_MODE_KEYBOARD && value)
+            {
+                gui_state.element_values [ELEMENT_CH2_MODE_CONSTANT] = false;
+                element_update (&gui_state.gui [ELEMENT_CH2_MODE_CONSTANT], false);
+            }
+            else if (gui_state.current_element == ELEMENT_CH2_MODE_CONSTANT && value)
+            {
+                gui_state.element_values [ELEMENT_CH2_MODE_KEYBOARD] = false;
+                element_update (&gui_state.gui [ELEMENT_CH2_MODE_KEYBOARD], false);
+            }
+            else if (gui_state.current_element == ELEMENT_NOISE_MODE_KEYBOARD && value)
+            {
+                gui_state.element_values [ELEMENT_NOISE_MODE_CONSTANT] = false;
+                element_update (&gui_state.gui [ELEMENT_NOISE_MODE_CONSTANT], false);
+            }
+            else if (gui_state.current_element == ELEMENT_NOISE_MODE_CONSTANT && value)
+            {
+                gui_state.element_values [ELEMENT_NOISE_MODE_KEYBOARD] = false;
+                element_update (&gui_state.gui [ELEMENT_NOISE_MODE_KEYBOARD], false);
+            }
 
+            element_update (element, value);
             gui_state.element_update = false;
         }
 

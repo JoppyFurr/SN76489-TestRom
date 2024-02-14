@@ -13,23 +13,23 @@ typedef enum element_type_e {
 
 typedef enum element_id_e {
     ELEMENT_CH0_VOLUME = 0,
-    ELEMENT_CH0_KEYBOARD_MODE,
-    ELEMENT_CH0_CONST_MODE,
+    ELEMENT_CH0_MODE_KEYBOARD,
+    ELEMENT_CH0_MODE_CONSTANT,
     ELEMENT_CH0_FREQUENCY,
     ELEMENT_CH0_BUTTON,
     ELEMENT_CH1_VOLUME,
-    ELEMENT_CH1_KEYBOARD_MODE,
-    ELEMENT_CH1_CONST_MODE,
+    ELEMENT_CH1_MODE_KEYBOARD,
+    ELEMENT_CH1_MODE_CONSTANT,
     ELEMENT_CH1_FREQUENCY,
     ELEMENT_CH1_BUTTON,
     ELEMENT_CH2_VOLUME,
-    ELEMENT_CH2_KEYBOARD_MODE,
-    ELEMENT_CH2_CONST_MODE,
+    ELEMENT_CH2_MODE_KEYBOARD,
+    ELEMENT_CH2_MODE_CONSTANT,
     ELEMENT_CH2_FREQUENCY,
     ELEMENT_CH2_BUTTON,
     ELEMENT_NOISE_VOLUME,
-    ELEMENT_NOISE_KEYBOARD_MODE,
-    ELEMENT_NOISE_CONST_MODE,
+    ELEMENT_NOISE_MODE_KEYBOARD,
+    ELEMENT_NOISE_MODE_CONSTANT,
     ELEMENT_NOISE_CONTROL,
     ELEMENT_NOISE_BUTTON,
     ELEMENT_KEYBOARD,
@@ -63,31 +63,33 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
         .x = 5, .y = 3, .width = 2, .height = 3,
         .callback = key_set_ch0_volume,
         .up   = ELEMENT_CH0_VOLUME,             .down  = ELEMENT_CH1_VOLUME,
-        .left = ELEMENT_CH0_VOLUME,             .right = ELEMENT_CH0_KEYBOARD_MODE
+        .left = ELEMENT_CH0_VOLUME,             .right = ELEMENT_CH0_MODE_KEYBOARD
     },
-    [ELEMENT_CH0_KEYBOARD_MODE] = {
+    [ELEMENT_CH0_MODE_KEYBOARD] = {
         .type = TYPE_LED, .max = 1,
         .x = 9, .y = 4, .width = 2, .height = 2,
-        .up   = ELEMENT_CH0_KEYBOARD_MODE,      .down  = ELEMENT_CH1_KEYBOARD_MODE,
-        .left = ELEMENT_CH0_VOLUME,             .right = ELEMENT_CH0_CONST_MODE
+        .callback = key_set_ch0_mode_keyboard,
+        .up   = ELEMENT_CH0_MODE_KEYBOARD,      .down  = ELEMENT_CH1_MODE_KEYBOARD,
+        .left = ELEMENT_CH0_VOLUME,             .right = ELEMENT_CH0_MODE_CONSTANT
     },
-    [ELEMENT_CH0_CONST_MODE] = {
+    [ELEMENT_CH0_MODE_CONSTANT] = {
         .type = TYPE_LED, .max = 1,
         .x = 13, .y = 4, .width = 2, .height = 2,
-        .up   = ELEMENT_CH0_CONST_MODE,         .down  = ELEMENT_CH1_CONST_MODE,
-        .left = ELEMENT_CH0_KEYBOARD_MODE,      .right = ELEMENT_CH0_FREQUENCY
+        .callback = key_set_ch0_mode_constant,
+        .up   = ELEMENT_CH0_MODE_CONSTANT,      .down  = ELEMENT_CH1_MODE_CONSTANT,
+        .left = ELEMENT_CH0_MODE_KEYBOARD,      .right = ELEMENT_CH0_FREQUENCY
     },
     [ELEMENT_CH0_FREQUENCY] = {
         .type = TYPE_VALUE_WIDE, .max = 1023,
         .x = 17, .y = 3, .width = 4, .height = 3,
-        .callback = register_write_ch0_frequency,
+        .callback = key_set_ch0_frequency,
         .up   = ELEMENT_CH0_FREQUENCY,          .down  = ELEMENT_CH1_FREQUENCY,
-        .left = ELEMENT_CH0_CONST_MODE,         .right = ELEMENT_CH0_BUTTON
+        .left = ELEMENT_CH0_MODE_CONSTANT,      .right = ELEMENT_CH0_BUTTON
     },
     [ELEMENT_CH0_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 3, .width = 6, .height = 2,
-        .callback = key_set_ch0_key,
+        .callback = key_set_ch0_button,
         .up   = ELEMENT_CH0_BUTTON,             .down  = ELEMENT_CH1_BUTTON,
         .left = ELEMENT_CH0_FREQUENCY,          .right = ELEMENT_CH0_BUTTON
     },
@@ -96,31 +98,33 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
         .x = 5, .y = 6, .width = 2, .height = 3,
         .callback = key_set_ch1_volume,
         .up   = ELEMENT_CH0_VOLUME,             .down  = ELEMENT_CH2_VOLUME,
-        .left = ELEMENT_CH1_VOLUME,             .right = ELEMENT_CH1_KEYBOARD_MODE
+        .left = ELEMENT_CH1_VOLUME,             .right = ELEMENT_CH1_MODE_KEYBOARD
     },
-    [ELEMENT_CH1_KEYBOARD_MODE] = {
+    [ELEMENT_CH1_MODE_KEYBOARD] = {
         .type = TYPE_LED, .max = 1,
         .x = 9, .y = 7, .width = 2, .height = 2,
-        .up   = ELEMENT_CH0_KEYBOARD_MODE,      .down  = ELEMENT_CH2_KEYBOARD_MODE,
-        .left = ELEMENT_CH1_VOLUME,             .right = ELEMENT_CH1_CONST_MODE
+        .callback = key_set_ch1_mode_keyboard,
+        .up   = ELEMENT_CH0_MODE_KEYBOARD,      .down  = ELEMENT_CH2_MODE_KEYBOARD,
+        .left = ELEMENT_CH1_VOLUME,             .right = ELEMENT_CH1_MODE_CONSTANT
     },
-    [ELEMENT_CH1_CONST_MODE] = {
+    [ELEMENT_CH1_MODE_CONSTANT] = {
         .type = TYPE_LED, .max = 1,
         .x = 13, .y = 7, .width = 2, .height = 2,
-        .up   = ELEMENT_CH0_CONST_MODE,         .down  = ELEMENT_CH2_CONST_MODE,
-        .left = ELEMENT_CH1_KEYBOARD_MODE,      .right = ELEMENT_CH1_FREQUENCY
+        .callback = key_set_ch1_mode_constant,
+        .up   = ELEMENT_CH0_MODE_CONSTANT,      .down  = ELEMENT_CH2_MODE_CONSTANT,
+        .left = ELEMENT_CH1_MODE_KEYBOARD,      .right = ELEMENT_CH1_FREQUENCY
     },
     [ELEMENT_CH1_FREQUENCY] = {
         .type = TYPE_VALUE_WIDE, .max = 1023,
         .x = 17, .y = 6, .width = 4, .height = 3,
-        .callback = register_write_ch1_frequency,
+        .callback = key_set_ch1_frequency,
         .up   = ELEMENT_CH0_FREQUENCY,          .down  = ELEMENT_CH2_FREQUENCY,
-        .left = ELEMENT_CH1_CONST_MODE,         .right = ELEMENT_CH1_BUTTON
+        .left = ELEMENT_CH1_MODE_CONSTANT,      .right = ELEMENT_CH1_BUTTON
     },
     [ELEMENT_CH1_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 6, .width = 6, .height = 2,
-        .callback = key_set_ch1_key,
+        .callback = key_set_ch1_button,
         .up   = ELEMENT_CH0_BUTTON,             .down  = ELEMENT_CH2_BUTTON,
         .left = ELEMENT_CH1_FREQUENCY,          .right = ELEMENT_CH1_BUTTON
     },
@@ -129,31 +133,33 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
         .x = 5, .y = 9, .width = 2, .height = 3,
         .callback = key_set_ch2_volume,
         .up   = ELEMENT_CH1_VOLUME,             .down  = ELEMENT_NOISE_VOLUME,
-        .left = ELEMENT_CH2_VOLUME,             .right = ELEMENT_CH2_KEYBOARD_MODE
+        .left = ELEMENT_CH2_VOLUME,             .right = ELEMENT_CH2_MODE_KEYBOARD
     },
-    [ELEMENT_CH2_KEYBOARD_MODE] = {
+    [ELEMENT_CH2_MODE_KEYBOARD] = {
         .type = TYPE_LED, .max = 1,
         .x = 9, .y = 10, .width = 2, .height = 2,
-        .up   = ELEMENT_CH1_KEYBOARD_MODE,      .down  = ELEMENT_NOISE_KEYBOARD_MODE,
-        .left = ELEMENT_CH2_VOLUME,             .right = ELEMENT_CH2_CONST_MODE
+        .callback = key_set_ch2_mode_keyboard,
+        .up   = ELEMENT_CH1_MODE_KEYBOARD,      .down  = ELEMENT_NOISE_MODE_KEYBOARD,
+        .left = ELEMENT_CH2_VOLUME,             .right = ELEMENT_CH2_MODE_CONSTANT
     },
-    [ELEMENT_CH2_CONST_MODE] = {
+    [ELEMENT_CH2_MODE_CONSTANT] = {
         .type = TYPE_LED, .max = 1,
         .x = 13, .y = 10, .width = 2, .height = 2,
-        .up   = ELEMENT_CH1_CONST_MODE,         .down  = ELEMENT_NOISE_CONST_MODE,
-        .left = ELEMENT_CH2_KEYBOARD_MODE,      .right = ELEMENT_CH2_FREQUENCY
+        .callback = key_set_ch2_mode_constant,
+        .up   = ELEMENT_CH1_MODE_CONSTANT,      .down  = ELEMENT_NOISE_MODE_CONSTANT,
+        .left = ELEMENT_CH2_MODE_KEYBOARD,      .right = ELEMENT_CH2_FREQUENCY
     },
     [ELEMENT_CH2_FREQUENCY] = {
         .type = TYPE_VALUE_WIDE, .max = 1023,
         .x = 17, .y = 9, .width = 4, .height = 3,
-        .callback = register_write_ch2_frequency,
+        .callback = key_set_ch2_frequency,
         .up   = ELEMENT_CH1_FREQUENCY,          .down  = ELEMENT_NOISE_CONTROL,
-        .left = ELEMENT_CH2_CONST_MODE,         .right = ELEMENT_CH2_BUTTON
+        .left = ELEMENT_CH2_MODE_CONSTANT,      .right = ELEMENT_CH2_BUTTON
     },
     [ELEMENT_CH2_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 9, .width = 6, .height = 2,
-        .callback = key_set_ch2_key,
+        .callback = key_set_ch2_button,
         .up   = ELEMENT_CH1_BUTTON,             .down  = ELEMENT_NOISE_BUTTON,
         .left = ELEMENT_CH2_FREQUENCY,          .right = ELEMENT_CH2_BUTTON
     },
@@ -162,32 +168,33 @@ static const gui_element_t psg_gui [ELEMENT_COUNT] = {
         .x = 5, .y = 12, .width = 2, .height = 3,
         .callback = key_set_noise_volume,
         .up   = ELEMENT_CH2_VOLUME,             .down  = ELEMENT_KEYBOARD,
-        .left = ELEMENT_NOISE_VOLUME,           .right = ELEMENT_NOISE_KEYBOARD_MODE
+        .left = ELEMENT_NOISE_VOLUME,           .right = ELEMENT_NOISE_MODE_KEYBOARD
     },
-    [ELEMENT_NOISE_KEYBOARD_MODE] = {
+    [ELEMENT_NOISE_MODE_KEYBOARD] = {
         .type = TYPE_LED, .max = 1,
         .x = 9, .y = 13, .width = 2, .height = 2,
-        .up   = ELEMENT_CH2_KEYBOARD_MODE,      .down  = ELEMENT_KEYBOARD,
-        .left = ELEMENT_NOISE_VOLUME,           .right = ELEMENT_NOISE_CONST_MODE
+        .callback = key_set_noise_mode_keyboard,
+        .up   = ELEMENT_CH2_MODE_KEYBOARD,      .down  = ELEMENT_KEYBOARD,
+        .left = ELEMENT_NOISE_VOLUME,           .right = ELEMENT_NOISE_MODE_CONSTANT
     },
-    [ELEMENT_NOISE_CONST_MODE] = {
+    [ELEMENT_NOISE_MODE_CONSTANT] = {
         .type = TYPE_LED, .max = 1,
         .x = 13, .y = 13, .width = 2, .height = 2,
-        .callback = register_write_noise_control,
-        .up   = ELEMENT_CH2_CONST_MODE,         .down  = ELEMENT_KEYBOARD,
-        .left = ELEMENT_NOISE_KEYBOARD_MODE,    .right = ELEMENT_NOISE_CONTROL
+        .callback = key_set_noise_mode_constant,
+        .up   = ELEMENT_CH2_MODE_CONSTANT,      .down  = ELEMENT_KEYBOARD,
+        .left = ELEMENT_NOISE_MODE_KEYBOARD,    .right = ELEMENT_NOISE_CONTROL
     },
     [ELEMENT_NOISE_CONTROL] = {
         .type = TYPE_VALUE, .max = 7,
         .x = 18, .y = 12, .width = 2, .height = 3,
-        .callback = register_write_noise_control,
+        .callback = key_set_noise_control,
         .up   = ELEMENT_CH2_FREQUENCY,          .down  = ELEMENT_KEYBOARD,
-        .left = ELEMENT_NOISE_CONST_MODE,       .right = ELEMENT_NOISE_BUTTON
+        .left = ELEMENT_NOISE_MODE_CONSTANT,    .right = ELEMENT_NOISE_BUTTON
     },
     [ELEMENT_NOISE_BUTTON] = {
         .type = TYPE_BUTTON, .max = 1,
         .x = 23, .y = 12, .width = 6, .height = 2,
-        .callback = key_set_noise_key,
+        .callback = key_set_noise_button,
         .up   = ELEMENT_CH2_BUTTON,             .down  = ELEMENT_KEYBOARD,
         .left = ELEMENT_NOISE_CONTROL,          .right = ELEMENT_NOISE_BUTTON
     },
