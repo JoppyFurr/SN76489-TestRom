@@ -34,6 +34,7 @@ channel_state_t channel_state [4] = {
  */
 static void key_set_ch0_key (bool value)
 {
+    channel_state [0].key_on = value;
     register_write_ch0_volume (value ? channel_state [0].volume : 0x0f);
 }
 
@@ -44,6 +45,11 @@ static void key_set_ch0_key (bool value)
 void key_set_ch0_volume (uint16_t value)
 {
     channel_state [0].volume = value & 0x0f;
+
+    if (channel_state [0].key_on)
+    {
+        register_write_ch0_volume (value & 0x0f);
+    }
 }
 
 
@@ -109,6 +115,7 @@ void key_set_ch0_button (uint16_t value)
  */
 void key_set_ch1_key (uint16_t value)
 {
+    channel_state [1].key_on = value;
     register_write_ch1_volume (value ? channel_state [1].volume : 0x0f);
 }
 
@@ -119,6 +126,11 @@ void key_set_ch1_key (uint16_t value)
 void key_set_ch1_volume (uint16_t value)
 {
     channel_state [1].volume = value & 0x0f;
+
+    if (channel_state [1].key_on)
+    {
+        register_write_ch1_volume (value & 0x0f);
+    }
 }
 
 
@@ -184,6 +196,7 @@ void key_set_ch1_button (uint16_t value)
  */
 void key_set_ch2_key (uint16_t value)
 {
+    channel_state [2].key_on = value;
     register_write_ch2_volume (value ? channel_state [2].volume : 0x0f);
 }
 
@@ -194,6 +207,11 @@ void key_set_ch2_key (uint16_t value)
 void key_set_ch2_volume (uint16_t value)
 {
     channel_state [2].volume = value & 0x0f;
+
+    if (channel_state [2].key_on)
+    {
+        register_write_ch2_volume (value & 0x0f);
+    }
 }
 
 
@@ -259,6 +277,7 @@ void key_set_ch2_button (uint16_t value)
  */
 void key_set_noise_key (uint16_t value)
 {
+    channel_state [3].key_on = value;
     register_write_noise_volume (value ? channel_state [3].volume : 0x0f);
 }
 
@@ -269,6 +288,11 @@ void key_set_noise_key (uint16_t value)
 void key_set_noise_volume (uint16_t value)
 {
     channel_state [3].volume = value & 0x0f;
+
+    if (channel_state [3].key_on)
+    {
+        register_write_noise_volume (value & 0x0f);
+    }
 }
 
 
