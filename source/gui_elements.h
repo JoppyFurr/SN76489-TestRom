@@ -36,6 +36,8 @@ typedef enum element_id_e {
     ELEMENT_COUNT
 } element_id_t;
 
+#define CHANNEL_OFFSET 5
+
 
 typedef struct gui_element_s {
 

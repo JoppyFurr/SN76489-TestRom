@@ -59,7 +59,10 @@ static const uint16_t value_defaults [ELEMENT_COUNT] = {
 };
 
 uint16_t notes [29] = {
-    0 /* TODO */
+    856, 807, 762, 719, 679, 641, 605, 571,
+    539, 508, 480, 453, 428, 404, 381, 360,
+    339, 320, 302, 285, 269, 254, 240, 226,
+    214, 202, 190, 180, 170
 };
 
 
@@ -390,19 +393,59 @@ void main (void)
 
             if (gui_state.current_element == ELEMENT_KEYBOARD)
             {
+                uint16_t note = notes [gui_state.keyboard_key - 1];
                 draw_keyboard_update (gui_state.keyboard_key - 1, true);
 
-                uint16_t note = notes [gui_state.keyboard_key - 1];
-                /* TODO */
+                for (int channel = 0; channel < (CHANNEL_OFFSET * 3); channel += CHANNEL_OFFSET)
+                {
+                    if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
+                    {
+                        gui_state.element_values [ELEMENT_CH0_FREQUENCY + channel] = note;
+                        element_update (&gui_state.gui [ELEMENT_CH0_FREQUENCY + channel], note);
+                    }
+                }
             }
             else
             {
-                /* Treat leaving the keyboard as letting go of the key */
-                /* TODO */
+                if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD])
+                {
+                    element_update (&gui_state.gui [ELEMENT_CH0_BUTTON], false);
+                }
+                if (gui_state.element_values [ELEMENT_CH1_MODE_KEYBOARD])
+                {
+                    element_update (&gui_state.gui [ELEMENT_CH1_BUTTON], false);
+                }
+                if (gui_state.element_values [ELEMENT_CH2_MODE_KEYBOARD])
+                {
+                    element_update (&gui_state.gui [ELEMENT_CH2_BUTTON], false);
+                }
+                if (gui_state.element_values [ELEMENT_NOISE_MODE_KEYBOARD])
+                {
+                    element_update (&gui_state.gui [ELEMENT_NOISE_BUTTON], false);
+                }
             }
 
             previous_key = gui_state.keyboard_key;
             gui_state.keyboard_update = false;
+        }
+
+        /* Key-down / key-up events on the keyboard */
+        if (gui_state.current_element == ELEMENT_KEYBOARD)
+        {
+            for (int channel = 0; channel < (CHANNEL_OFFSET * 4); channel += CHANNEL_OFFSET)
+            {
+                if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
+                {
+                    if (key_pressed == PORT_A_KEY_1)
+                    {
+                        element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], true);
+                    }
+                    if (key_released == PORT_A_KEY_1)
+                    {
+                        element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], false);
+                    }
+                }
+            }
         }
 
         if (gui_state.element_update)
@@ -454,11 +497,6 @@ void main (void)
 
             element_update (element, value);
             gui_state.element_update = false;
-        }
-
-        if (gui_state.current_element == ELEMENT_KEYBOARD)
-        {
-            /* TODO */
         }
     }
 }
