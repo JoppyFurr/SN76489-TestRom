@@ -274,6 +274,27 @@ static void element_input (gui_state_t *state, uint16_t key_pressed, int16_t key
 
 
 /*
+ * Frame interrupt, used to colour-cycle the cursor.
+ */
+static void frame_interrupt (void)
+{
+    static uint8_t frame = 0;
+    static uint8_t hilight_index = 3;
+    frame++;
+
+    /* Simple 3-frame palette cycle to animate cursor */
+    if ((frame & 0x07) == 0)
+    {
+        static int band = 3;
+
+        SMS_setSpritePaletteColor (band, 2); /* Dim the previously bright band */
+        band = (band == 1) ? 3 : band - 1;
+        SMS_setSpritePaletteColor (band, 23); /* Brighten the new bright band */
+    }
+}
+
+
+/*
  * Entry point.
  */
 void main (void)
@@ -342,6 +363,7 @@ void main (void)
                    gui_state.gui [gui_state.current_element].cursor_w,
                    gui_state.gui [gui_state.current_element].cursor_h);
 
+    SMS_setFrameInterruptHandler (frame_interrupt);
     SMS_displayOn ();
 
     /* Main loop */
