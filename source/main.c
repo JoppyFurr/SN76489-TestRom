@@ -236,11 +236,13 @@ static void element_input (gui_state_t *state, uint16_t key_pressed, int16_t key
     }
     else if (element->type == TYPE_BUTTON)
     {
+        uint16_t key_status = SMS_getKeysStatus ();
+
         if (key_pressed)
         {
             *value = 1;
         }
-        else if (key_released)
+        else if (key_released && (key_status & PORT_A_KEY_MASK) == 0)
         {
             *value = 0;
         }
@@ -350,6 +352,7 @@ void main (void)
         SMS_waitForVBlank ();
         uint16_t key_pressed = SMS_getKeysPressed ();
         uint16_t key_released = SMS_getKeysReleased ();
+        uint16_t key_status = SMS_getKeysStatus ();
 
         /* Navigation */
         if (key_pressed & PORT_A_DPAD_MASK)
@@ -358,15 +361,9 @@ void main (void)
         }
 
         /* Button input */
-        switch ((key_pressed | key_released) & PORT_A_KEY_MASK)
+        if ((key_pressed | key_released) & PORT_A_KEY_MASK)
         {
-            case PORT_A_KEY_1:
-            case PORT_A_KEY_2:
-                element_input (&gui_state, key_pressed, key_released);
-                break;
-
-            default:
-                break;
+            element_input (&gui_state, key_pressed & PORT_A_KEY_MASK, key_released & PORT_A_KEY_MASK);
         }
 
         if (gui_state.cursor_update)
@@ -432,11 +429,11 @@ void main (void)
             {
                 if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
                 {
-                    if (key_pressed == PORT_A_KEY_1)
+                    if (key_pressed & PORT_A_KEY_MASK)
                     {
                         element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], true);
                     }
-                    if (key_released == PORT_A_KEY_1)
+                    if ((key_released & PORT_A_KEY_MASK) && (key_status & PORT_A_KEY_MASK) == 0)
                     {
                         element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], false);
                     }
