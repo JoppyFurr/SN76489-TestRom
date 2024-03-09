@@ -269,7 +269,6 @@ void main (void)
     SMS_useFirstHalfTilesforSprites (true);
     SMS_initSprites ();
     SMS_copySpritestoSAT ();
-    SMS_setBGScrollX (0xfc);
 
     gui_state_t gui_state = { .gui = psg_gui, .current_element = ELEMENT_CH0_VOLUME };
 

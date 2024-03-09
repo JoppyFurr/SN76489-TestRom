@@ -69,7 +69,7 @@ void draw_footer (void)
         PATTERN_FOOTER + 0, PATTERN_FOOTER + 1, PATTERN_FOOTER + 2,
         PATTERN_FOOTER + 3, PATTERN_FOOTER + 4
     };
-    SMS_loadTileMapArea (1, 23, name, 5, 1);
+    SMS_loadTileMapArea (0, 23, name, 5, 1);
 
     const uint16_t version [3] = {
         PATTERN_FOOTER + 5, PATTERN_FOOTER + 6, PATTERN_FOOTER + 7,
