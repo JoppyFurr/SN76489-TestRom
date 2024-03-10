@@ -36,6 +36,8 @@ typedef struct gui_state_s {
 
 } gui_state_t;
 
+gui_state_t gui_state = { .gui = psg_gui, .current_element = ELEMENT_CH0_VOLUME };
+
 static const uint16_t value_defaults [ELEMENT_COUNT] = {
     [ELEMENT_CH0_VOLUME] = 0,
     [ELEMENT_CH0_MODE_KEYBOARD] = 1,
@@ -100,34 +102,34 @@ static void element_update (const gui_element_t *element, uint16_t value)
 /*
  * Move the cursor to select a different GUI element.
  */
-static void element_navigate (gui_state_t *state, uint16_t key_pressed)
+static void element_navigate (uint16_t key_pressed)
 {
-    if (state->current_element == ELEMENT_KEYBOARD)
+    if (gui_state.current_element == ELEMENT_KEYBOARD)
     {
         switch (key_pressed)
         {
             case PORT_A_KEY_UP:
-                if      (state->keyboard_key < 7 ) state->current_element = ELEMENT_NOISE_VOLUME;
-                else if (state->keyboard_key < 11 ) state->current_element = ELEMENT_NOISE_MODE_KEYBOARD;
-                else if (state->keyboard_key < 16) state->current_element = ELEMENT_NOISE_MODE_CONSTANT;
-                else if (state->keyboard_key < 21) state->current_element = ELEMENT_NOISE_CONTROL;
-                else                               state->current_element = ELEMENT_NOISE_BUTTON;
-                state->cursor_update = true;
-                state->keyboard_key = 0;
-                state->keyboard_update = true;
+                if      (gui_state.keyboard_key <  7) gui_state.current_element = ELEMENT_NOISE_VOLUME;
+                else if (gui_state.keyboard_key < 11) gui_state.current_element = ELEMENT_NOISE_MODE_KEYBOARD;
+                else if (gui_state.keyboard_key < 16) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
+                else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_CONTROL;
+                else                                  gui_state.current_element = ELEMENT_NOISE_BUTTON;
+                gui_state.cursor_update = true;
+                gui_state.keyboard_key = 0;
+                gui_state.keyboard_update = true;
                 break;
             case PORT_A_KEY_LEFT:
-                if (state->keyboard_key > 1)
+                if (gui_state.keyboard_key > 1)
                 {
-                    state->keyboard_key--;
-                    state->keyboard_update = true;
+                    gui_state.keyboard_key--;
+                    gui_state.keyboard_update = true;
                 }
                 break;
             case PORT_A_KEY_RIGHT:
-                if (state->keyboard_key < 29)
+                if (gui_state.keyboard_key < 29)
                 {
-                    state->keyboard_key++;
-                    state->keyboard_update = true;
+                    gui_state.keyboard_key++;
+                    gui_state.keyboard_update = true;
                 }
                 break;
             default:
@@ -136,71 +138,71 @@ static void element_navigate (gui_state_t *state, uint16_t key_pressed)
     }
     else
     {
-        uint8_t element_was = state->current_element;
-        const gui_element_t *element = &state->gui [state->current_element];
+        uint8_t element_was = gui_state.current_element;
+        const gui_element_t *element = &gui_state.gui [gui_state.current_element];
 
         switch (key_pressed)
         {
             case PORT_A_KEY_UP:
-                state->current_element = element->up;
+                gui_state.current_element = element->up;
                 break;
 
             case PORT_A_KEY_UP | PORT_A_KEY_RIGHT:
-                state->current_element = state->gui [element->right].up;
+                gui_state.current_element = gui_state.gui [element->right].up;
                 break;
 
             case PORT_A_KEY_RIGHT:
-                state->current_element = element->right;
+                gui_state.current_element = element->right;
                 break;
 
             case PORT_A_KEY_DOWN | PORT_A_KEY_RIGHT:
-                state->current_element = state->gui [element->right].down;
+                gui_state.current_element = gui_state.gui [element->right].down;
                 break;
 
             case PORT_A_KEY_DOWN:
-                state->current_element = element->down;
+                gui_state.current_element = element->down;
                 break;
 
             case PORT_A_KEY_DOWN | PORT_A_KEY_LEFT:
-                state->current_element = state->gui [element->left].down;
+                gui_state.current_element = gui_state.gui [element->left].down;
                 break;
 
             case PORT_A_KEY_LEFT:
-                state->current_element = element->left;
+                gui_state.current_element = element->left;
                 break;
 
             case PORT_A_KEY_UP | PORT_A_KEY_LEFT:
-                state->current_element = state->gui [element->left].up;
+                gui_state.current_element = gui_state.gui [element->left].up;
                 break;
 
             default:
                 break;
         }
 
-        if (state->current_element != element_was)
+        if (gui_state.current_element != element_was)
         {
             /* Moving to the keyboard should hide the cursor */
-            if (state->current_element == ELEMENT_KEYBOARD)
+            if (gui_state.current_element == ELEMENT_KEYBOARD)
             {
                 /* Hide the cursor */
                 SMS_initSprites ();
                 SMS_copySpritestoSAT ();
 
                 /* Select a key */
-                state->keyboard_key = element->x - 1;
-                state->keyboard_update = true;
+                gui_state.keyboard_key = element->x - 1;
+                gui_state.keyboard_update = true;
             }
 
             /* "BUTTON" elements turn off when unselected. Note that
              * our pointer, 'element', still points at the previous element */
             if (element->type == TYPE_BUTTON)
             {
-                state->element_values [element_was] = 0;
+                gui_state.element_values [element_was] = 0;
                 element_update (element, 0);
             }
         }
 
-        state->cursor_update = true;
+        gui_state.cursor_update = true;
     }
 }
 
@@ -208,22 +210,22 @@ static void element_navigate (gui_state_t *state, uint16_t key_pressed)
 /*
  * Update the in-ram value of an element when a button is pressed or released.
  */
-static void element_input (gui_state_t *state, uint16_t key_pressed, int16_t key_released)
+static void element_input (uint16_t key_pressed, int16_t key_released)
 {
-    const gui_element_t *element = &state->gui [state->current_element];
-    uint16_t *value = &state->element_values [state->current_element];
+    const gui_element_t *element = &gui_state.gui [gui_state.current_element];
+    uint16_t *value = &gui_state.element_values [gui_state.current_element];
 
     if (element->type == TYPE_VALUE || element->type == TYPE_VALUE_WIDE)
     {
         if (key_pressed == PORT_A_KEY_1 && *value > 0)
         {
             *value -= 1;
-            state->element_update = true;
+            gui_state.element_update = true;
         }
         else if (key_pressed == PORT_A_KEY_2 && *value < element->max)
         {
             *value += 1;
-            state->element_update = true;
+            gui_state.element_update = true;
         }
     }
     else if (element->type == TYPE_LED)
@@ -231,7 +233,7 @@ static void element_input (gui_state_t *state, uint16_t key_pressed, int16_t key
         if (key_pressed)
         {
             *value ^= 0x0001;
-            state->element_update = true;
+            gui_state.element_update = true;
         }
     }
     else if (element->type == TYPE_BUTTON)
@@ -246,7 +248,7 @@ static void element_input (gui_state_t *state, uint16_t key_pressed, int16_t key
         {
             *value = 0;
         }
-        state->element_update = true;
+        gui_state.element_update = true;
     }
 }
 
@@ -289,8 +291,6 @@ void main (void)
     SMS_useFirstHalfTilesforSprites (true);
     SMS_initSprites ();
     SMS_copySpritestoSAT ();
-
-    gui_state_t gui_state = { .gui = psg_gui, .current_element = ELEMENT_CH0_VOLUME };
 
     draw_reset (0, 24);
     draw_title ();
@@ -357,13 +357,13 @@ void main (void)
         /* Navigation */
         if (key_pressed & PORT_A_DPAD_MASK)
         {
-            element_navigate (&gui_state, key_pressed);
+            element_navigate (key_pressed);
         }
 
         /* Button input */
         if ((key_pressed | key_released) & PORT_A_KEY_MASK)
         {
-            element_input (&gui_state, key_pressed & PORT_A_KEY_MASK, key_released & PORT_A_KEY_MASK);
+            element_input (key_pressed & PORT_A_KEY_MASK, key_released & PORT_A_KEY_MASK);
         }
 
         if (gui_state.cursor_update)
