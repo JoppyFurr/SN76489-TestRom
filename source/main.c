@@ -331,6 +331,10 @@ void main (void)
     SMS_loadBGPalette (palette);
     SMS_loadSpritePalette (palette);
     SMS_setBackdropColor (0);
+    SMS_setSpritePaletteColor (1, 2); /* Dark Red */
+    SMS_setSpritePaletteColor (2, 2); /* Dark Red */
+    SMS_setSpritePaletteColor (3, 23); /* Light Red */
+    SMS_setBGPaletteColor (4, 58); /* Light Lavender */
 
     SMS_loadTiles (patterns, 0, sizeof (patterns));
     SMS_useFirstHalfTilesforSprites (true);
@@ -461,6 +465,7 @@ void main (void)
                 {
                     element_update (&gui_state.gui [ELEMENT_NOISE_BUTTON], false);
                 }
+                SMS_setBGPaletteColor (4, 58); /* Light Lavender */
             }
 
             previous_key = gui_state.keyboard_key;
@@ -470,6 +475,15 @@ void main (void)
         /* Key-down / key-up events on the keyboard */
         if (gui_state.current_element == ELEMENT_KEYBOARD)
         {
+            if (key_pressed & PORT_A_KEY_MASK)
+            {
+                SMS_setBGPaletteColor (4, 37); /* Dark Lavender */
+            }
+            else if ((key_released & PORT_A_KEY_MASK) && (key_status & PORT_A_KEY_MASK) == 0)
+            {
+                SMS_setBGPaletteColor (4, 58); /* Light Lavender */
+            }
+
             for (int channel = 0; channel < (CHANNEL_OFFSET * 4); channel += CHANNEL_OFFSET)
             {
                 if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
@@ -478,7 +492,7 @@ void main (void)
                     {
                         element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], true);
                     }
-                    if ((key_released & PORT_A_KEY_MASK) && (key_status & PORT_A_KEY_MASK) == 0)
+                    else if ((key_released & PORT_A_KEY_MASK) && (key_status & PORT_A_KEY_MASK) == 0)
                     {
                         element_update (&gui_state.gui [ELEMENT_CH0_BUTTON + channel], false);
                     }
