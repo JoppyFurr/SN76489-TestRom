@@ -40,14 +40,23 @@ pattern_index.h contains the index of the first tile from each image file:
 ```
 #define PATTERN_EMPTY 0
 #define PATTERN_CURSOR 1
-
 ```
 
 palette.h contains the palette:
 ```
-const uint8_t palette [16] = { 0x04, 0x19, 0x3f, 0x00, 0x15, 0x2a };
-
+#ifdef TARGET_SMS
+static const uint8_t palette [16] = { 0x04, 0x19, 0x3f, 0x00, 0x15, 0x2a };
+#elif defined (TARGET_GG)
+static const uint16_t palette [16] = { 0x0050, 0x05a5, 0x0fff, 0x0000, 0x0555, 0x0aaa };
+#endif
 ```
+
+Note that while only the Master System's 64 colours are supported, the generated palette
+is available both in 6-bit Master System format, and a 12-bit Game Gear format, to allow
+re-use on the Game Gear.
+
+To select the correct palette, you will need to define one of `TARGET_SMS` or `TARGET_GG`.
+
 
 ## Dependencies
  * zlib

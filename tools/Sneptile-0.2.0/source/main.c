@@ -328,6 +328,21 @@ static int process_file (char *name)
 
 
 /*
+ * Convert from 6-bit SMS colour to the equivalent 12-bit GG colour.
+ */
+static uint16_t sms_colour_to_gg (uint8_t sms_colour)
+{
+    uint16_t gg_colour = 0;
+
+    gg_colour |=  (sms_colour      & 0x03) * 5;         /* Red */
+    gg_colour |= ((sms_colour >> 2 & 0x03) * 5) << 4;   /* Green */
+    gg_colour |= ((sms_colour >> 4 & 0x03) * 5) << 8;   /* Blue */
+
+    return gg_colour;
+}
+
+
+/*
  * Export the palette array.
  */
 static int export_palette (void)
@@ -338,12 +353,25 @@ static int export_palette (void)
         return -1;
     }
 
-    fprintf (palette_file, "const uint8_t palette [16] = { ");
+    /* SMS Palette */
+    fprintf (palette_file, "#ifdef TARGET_SMS\n");
+    fprintf (palette_file, "static const uint8_t palette [16] = { ");
 
     for (uint32_t i = 0; i < palette_size; i++)
     {
         fprintf (palette_file, "0x%02x%s", palette [i], ((i + 1) < palette_size) ? ", " : " };\n");
     }
+
+    /* GG Palette */
+    fprintf (palette_file, "#elif defined (TARGET_GG)\n");
+    fprintf (palette_file, "static const uint16_t palette [16] = { ");
+
+    for (uint32_t i = 0; i < palette_size; i++)
+    {
+        fprintf (palette_file, "0x%04x%s", sms_colour_to_gg (palette [i]), ((i + 1) < palette_size) ? ", " : " };\n");
+    }
+
+    fprintf (palette_file, "#endif\n");
 
     return 0;
 }
@@ -391,7 +419,7 @@ int main (int argc, char **argv)
     }
     else
     {
-        fprintf (pattern_file, "const uint32_t patterns [] = {\n");
+        fprintf (pattern_file, "static const uint32_t patterns [] = {\n");
 
         for (uint32_t i = 0; i < argc; i++)
         {
