@@ -42,22 +42,38 @@ static const uint16_t value_defaults [ELEMENT_COUNT] = {
     [ELEMENT_CH0_VOLUME] = 0,
     [ELEMENT_CH0_MODE_KEYBOARD] = 1,
     [ELEMENT_CH0_MODE_CONSTANT] = 0,
+#ifdef TARGET_GG
+    [ELEMENT_CH0_STEREO_LEFT] = 1,
+    [ELEMENT_CH0_STEREO_RIGHT] = 1,
+#endif
     [ELEMENT_CH0_FREQUENCY] = 428,
     [ELEMENT_CH0_BUTTON] = 0,
     [ELEMENT_CH1_VOLUME] = 0,
     [ELEMENT_CH1_MODE_KEYBOARD] = 0,
     [ELEMENT_CH1_MODE_CONSTANT] = 0,
     [ELEMENT_CH1_FREQUENCY] = 339,
+#ifdef TARGET_GG
+    [ELEMENT_CH1_STEREO_LEFT] = 1,
+    [ELEMENT_CH1_STEREO_RIGHT] = 1,
+#endif
     [ELEMENT_CH1_BUTTON] = 0,
     [ELEMENT_CH2_VOLUME] = 0,
     [ELEMENT_CH2_MODE_KEYBOARD] = 0,
     [ELEMENT_CH2_MODE_CONSTANT] = 0,
     [ELEMENT_CH2_FREQUENCY] = 285,
+#ifdef TARGET_GG
+    [ELEMENT_CH2_STEREO_LEFT] = 1,
+    [ELEMENT_CH2_STEREO_RIGHT] = 1,
+#endif
     [ELEMENT_CH2_BUTTON] = 0,
     [ELEMENT_NOISE_VOLUME] = 0,
     [ELEMENT_NOISE_MODE_KEYBOARD] = 0,
     [ELEMENT_NOISE_MODE_CONSTANT] = 0,
     [ELEMENT_NOISE_CONTROL] = 4,
+#ifdef TARGET_GG
+    [ELEMENT_NOISE_STEREO_LEFT] = 1,
+    [ELEMENT_NOISE_STEREO_RIGHT] = 1,
+#endif
     [ELEMENT_NOISE_BUTTON] = 0,
 };
 
@@ -109,24 +125,39 @@ static void element_navigate (uint16_t key_pressed)
         switch (key_pressed)
         {
             case PORT_A_KEY_UP:
+#ifdef TARGET_SMS
                 if      (gui_state.keyboard_key <  7) gui_state.current_element = ELEMENT_NOISE_VOLUME;
                 else if (gui_state.keyboard_key < 11) gui_state.current_element = ELEMENT_NOISE_MODE_KEYBOARD;
                 else if (gui_state.keyboard_key < 16) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
                 else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_CONTROL;
+#elif defined (TARGET_GG)
+                if      (gui_state.keyboard_key <  8) gui_state.current_element = ELEMENT_NOISE_VOLUME;
+                else if (gui_state.keyboard_key < 13) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
+                else if (gui_state.keyboard_key < 18) gui_state.current_element = ELEMENT_NOISE_CONTROL;
+                else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_STEREO_RIGHT;
+#endif
                 else                                  gui_state.current_element = ELEMENT_NOISE_BUTTON;
                 gui_state.cursor_update = true;
                 gui_state.keyboard_key = 0;
                 gui_state.keyboard_update = true;
                 break;
             case PORT_A_KEY_LEFT:
+#ifdef TARGET_SMS
                 if (gui_state.keyboard_key > 1)
+#elif defined (TARGET_GG)
+                if (gui_state.keyboard_key > 6)
+#endif
                 {
                     gui_state.keyboard_key--;
                     gui_state.keyboard_update = true;
                 }
                 break;
             case PORT_A_KEY_RIGHT:
+#ifdef TARGET_SMS
                 if (gui_state.keyboard_key < 29)
+#elif defined (TARGET_GG)
+                if (gui_state.keyboard_key < 22)
+#endif
                 {
                     gui_state.keyboard_key++;
                     gui_state.keyboard_update = true;
@@ -310,9 +341,15 @@ static void frame_interrupt (void)
     {
         static int band = 3;
 
-        SMS_setSpritePaletteColor (band, 2); /* Dim the previously bright band */
+#ifdef TARGET_SMS
+        SMS_setSpritePaletteColor (band, RGB (2, 0, 0));    /* Dark Red for the previously bright band */
         band = (band == 1) ? 3 : band - 1;
-        SMS_setSpritePaletteColor (band, 23); /* Brighten the new bright band */
+        SMS_setSpritePaletteColor (band, RGB (3, 1, 1));    /* Light Red for the new bright band */
+#elif defined (TARGET_GG)
+        GG_setSpritePaletteColor (band, RGB (10, 0, 0));     /* Dark Red for the previously bright band */
+        band = (band == 1) ? 3 : band - 1;
+        GG_setSpritePaletteColor (band, RGB (15, 5, 5));    /* Light Red for the new bright band */
+#endif
     }
 
     /* Animate the cursor slide */
@@ -328,14 +365,23 @@ static void frame_interrupt (void)
 void main (void)
 {
     /* Load palette */
+#ifdef TARGET_SMS
     SMS_loadBGPalette (palette);
     SMS_loadSpritePalette (palette);
-    SMS_setBackdropColor (0);
-    SMS_setSpritePaletteColor (1, 2); /* Dark Red */
-    SMS_setSpritePaletteColor (2, 2); /* Dark Red */
-    SMS_setSpritePaletteColor (3, 23); /* Light Red */
-    SMS_setBGPaletteColor (4, 58); /* Light Lavender */
+    SMS_setSpritePaletteColor (1, RGB (2, 0, 0));   /* Dark Red */
+    SMS_setSpritePaletteColor (2, RGB (2, 0, 0));   /* Dark Red */
+    SMS_setSpritePaletteColor (3, RGB (3, 1, 1));   /* Light Red */
+    SMS_setBGPaletteColor (4, RGB (2, 2, 3));       /* Light Lavender */
+#elif defined (TARGET_GG)
+    GG_loadBGPalette (palette);
+    GG_loadSpritePalette (palette);
+    GG_setSpritePaletteColor (1, RGB (8, 0, 0));    /* Dark Red */
+    GG_setSpritePaletteColor (2, RGB (8, 0, 0));    /* Dark Red */
+    GG_setSpritePaletteColor (3, RGB (15, 4, 4));   /* Light Red */
+    GG_setBGPaletteColor (4, RGB (12, 12,  15));    /* Light Lavender */
+#endif
 
+    SMS_setBackdropColor (0);
     SMS_loadTiles (patterns, 0, sizeof (patterns));
     SMS_useFirstHalfTilesforSprites (true);
     SMS_initSprites ();
@@ -343,7 +389,6 @@ void main (void)
 
     draw_reset (0, 24);
     draw_title ();
-    draw_footer ();
 
     /* Initialise value defaults */
     for (uint8_t i = ELEMENT_CH0_VOLUME; i < ELEMENT_KEYBOARD; i++)
@@ -358,8 +403,6 @@ void main (void)
             element->callback (value);
         }
     }
-
-    draw_labels ();
 
     /* Draw the GUI elements with their current values */
     for (uint8_t i = ELEMENT_CH0_VOLUME; i <= ELEMENT_NOISE_BUTTON; i++)
@@ -384,8 +427,9 @@ void main (void)
             draw_button (element->x, element->y, value);
         }
     }
-
     draw_keyboard ();
+    draw_labels ();
+    draw_footer ();
 
     cursor_target (gui_state.gui [gui_state.current_element].cursor_x,
                    gui_state.gui [gui_state.current_element].cursor_y,
@@ -465,7 +509,11 @@ void main (void)
                 {
                     element_update (&gui_state.gui [ELEMENT_NOISE_BUTTON], false);
                 }
-                SMS_setBGPaletteColor (4, 58); /* Light Lavender */
+#ifdef TARGET_SMS
+                SMS_setBGPaletteColor (4, RGB (2, 2, 3));       /* Light Lavender */
+#elif defined (TARGET_GG)
+                GG_setBGPaletteColor (4, RGB (10, 10,  15));    /* Light Lavender */
+#endif
             }
 
             previous_key = gui_state.keyboard_key;
@@ -477,11 +525,19 @@ void main (void)
         {
             if (key_pressed & PORT_A_KEY_MASK)
             {
-                SMS_setBGPaletteColor (4, 37); /* Dark Lavender */
+#ifdef TARGET_SMS
+                SMS_setBGPaletteColor (4, RGB (1, 1, 2));       /* Dark Lavender */
+#elif defined (TARGET_GG)
+                GG_setBGPaletteColor (4, RGB (5, 5, 10));    /* Dark Lavender */
+#endif
             }
             else if ((key_released & PORT_A_KEY_MASK) && (key_status & PORT_A_KEY_MASK) == 0)
             {
-                SMS_setBGPaletteColor (4, 58); /* Light Lavender */
+#ifdef TARGET_SMS
+                SMS_setBGPaletteColor (4, RGB (2, 2, 3));       /* Light Lavender */
+#elif defined (TARGET_GG)
+                GG_setBGPaletteColor (4, RGB (10, 10, 15));    /* Light Lavender */
+#endif
             }
 
             for (int channel = 0; channel < (CHANNEL_OFFSET * 4); channel += CHANNEL_OFFSET)
