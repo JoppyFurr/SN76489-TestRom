@@ -25,9 +25,10 @@ build_sneptile ()
 }
 
 
+# Parameter {1} - 'PAL' or 'NTSC'
 build_sn76489_test_rom_sms ()
 {
-    echo "Building SN76489 Test ROM for SMS..."
+    echo "Building SN76489 Test ROM for SMS (${1})..."
 
     echo "  Generating tile data..."
     mkdir -p tile_data
@@ -52,17 +53,17 @@ build_sn76489_test_rom_sms ()
     for file in cursor draw register key_interface main
     do
         echo "   -> ${file}.c"
-        ${sdcc} -c -mz80 -DTARGET_SMS --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
+        ${sdcc} -c -mz80 -DTARGET_SMS -DTARGET_${1} --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
             -o "build/${file}.rel" "source/${file}.c" || exit 1
     done
 
     echo ""
     echo "  Linking..."
-    ${sdcc} -o build/SN76489_TestRom.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib.lib || exit 1
+    ${sdcc} -o build/SN76489_TestRom_${1}.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib.lib || exit 1
 
     echo ""
     echo "  Generating ROM..."
-    ${ihx2sms} build/SN76489_TestRom.ihx SN76489_TestRom.sms || exit 1
+    ${ihx2sms} build/SN76489_TestRom_${1}.ihx SN76489_TestRom_${1}.sms || exit 1
 
     echo ""
     echo "  Done"
@@ -96,7 +97,7 @@ build_sn76489_test_rom_gg ()
     for file in cursor draw register key_interface main
     do
         echo "   -> ${file}.c"
-        ${sdcc} -c -mz80 -DTARGET_GG --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
+        ${sdcc} -c -mz80 -DTARGET_GG -DTARGET_NTSC --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
             -o "build/${file}.rel" "source/${file}.c" || exit 1
     done
 
@@ -116,5 +117,6 @@ build_sn76489_test_rom_gg ()
 rm -rf build
 
 build_sneptile
-build_sn76489_test_rom_sms
+build_sn76489_test_rom_sms PAL
+build_sn76489_test_rom_sms NTSC
 build_sn76489_test_rom_gg
