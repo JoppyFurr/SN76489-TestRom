@@ -32,6 +32,3 @@ void draw_value (uint8_t x, uint8_t y, uint8_t value);
 
 /* Draw a four digit value indicator. */
 void draw_value_wide (uint8_t x, uint8_t y, uint16_t value);
-
-/* Draw a dimmed-out two digit value indicator. */
-void draw_value_hidden (uint8_t x, uint8_t y);

@@ -7,12 +7,20 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef TARGET_SG
+#include "SGlib.h"
+#include "SMSlib_compat.h"
+#include "../tile_data/colour_table.h"
+#else
 #include "SMSlib.h"
+#include "../tile_data/palette.h"
+#endif
+
+__sfr __at 0xbf vdp_control_port;
 
 #define PORT_A_DPAD_MASK    (PORT_A_KEY_UP | PORT_A_KEY_DOWN | PORT_A_KEY_LEFT | PORT_A_KEY_RIGHT)
 #define PORT_A_KEY_MASK     (PORT_A_KEY_1 | PORT_A_KEY_2)
 
-#include "../tile_data/palette.h"
 #include "../tile_data/pattern.h"
 #include "../tile_data/pattern_index.h"
 #include "cursor.h"
@@ -136,16 +144,16 @@ static void element_navigate (uint16_t key_pressed)
         switch (key_pressed)
         {
             case PORT_A_KEY_UP:
-#ifdef TARGET_SMS
-                if      (gui_state.keyboard_key <  7) gui_state.current_element = ELEMENT_NOISE_VOLUME;
-                else if (gui_state.keyboard_key < 11) gui_state.current_element = ELEMENT_NOISE_MODE_KEYBOARD;
-                else if (gui_state.keyboard_key < 16) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
-                else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_CONTROL;
-#elif defined (TARGET_GG)
+#ifdef TARGET_GG
                 if      (gui_state.keyboard_key <  8) gui_state.current_element = ELEMENT_NOISE_VOLUME;
                 else if (gui_state.keyboard_key < 13) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
                 else if (gui_state.keyboard_key < 18) gui_state.current_element = ELEMENT_NOISE_CONTROL;
                 else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_STEREO_RIGHT;
+#else
+                if      (gui_state.keyboard_key <  7) gui_state.current_element = ELEMENT_NOISE_VOLUME;
+                else if (gui_state.keyboard_key < 11) gui_state.current_element = ELEMENT_NOISE_MODE_KEYBOARD;
+                else if (gui_state.keyboard_key < 16) gui_state.current_element = ELEMENT_NOISE_MODE_CONSTANT;
+                else if (gui_state.keyboard_key < 21) gui_state.current_element = ELEMENT_NOISE_CONTROL;
 #endif
                 else                                  gui_state.current_element = ELEMENT_NOISE_BUTTON;
                 gui_state.cursor_update = true;
@@ -153,10 +161,10 @@ static void element_navigate (uint16_t key_pressed)
                 gui_state.keyboard_update = true;
                 break;
             case PORT_A_KEY_LEFT:
-#ifdef TARGET_SMS
-                if (gui_state.keyboard_key > 1)
-#elif defined (TARGET_GG)
+#ifdef TARGET_GG
                 if (gui_state.keyboard_key > 6)
+#else
+                if (gui_state.keyboard_key > 1)
 #endif
                 {
                     gui_state.keyboard_key--;
@@ -164,10 +172,10 @@ static void element_navigate (uint16_t key_pressed)
                 }
                 break;
             case PORT_A_KEY_RIGHT:
-#ifdef TARGET_SMS
-                if (gui_state.keyboard_key < 29)
-#elif defined (TARGET_GG)
+#ifdef TARGET_GG
                 if (gui_state.keyboard_key < 22)
+#else
+                if (gui_state.keyboard_key < 29)
 #endif
                 {
                     gui_state.keyboard_key++;
@@ -320,7 +328,7 @@ static void key_repeat (void)
     }
 
     /* If exactly one button is held down, run the timer */
-    uint16_t key_status = SMS_getKeysStatus ();
+    uint16_t key_status = SMS_getKeysStatus () & PORT_A_KEY_MASK;
     if (key_status == PORT_A_KEY_1 || key_status == PORT_A_KEY_2)
     {
         if (start_timer == 30) /* 30 frames for 500 ms start time */
@@ -343,8 +351,8 @@ static void key_repeat (void)
  */
 static void frame_interrupt (void)
 {
+#ifndef TARGET_SG
     static uint8_t frame = 0;
-    static uint8_t hilight_index = 3;
     frame++;
 
     /* Simple 3-frame palette cycle to animate cursor */
@@ -362,6 +370,7 @@ static void frame_interrupt (void)
         GG_setSpritePaletteColor (band, RGB (15, 5, 5));    /* Light Red for the new bright band */
 #endif
     }
+#endif
 
     /* Animate the cursor slide */
     cursor_tick ();
@@ -375,14 +384,29 @@ static void frame_interrupt (void)
  */
 void main (void)
 {
-    /* Load palette */
-#ifdef TARGET_SMS
+    /* Configure VDP and load data to VRAM */
+#ifdef TARGET_SG
+    vdp_control_port = 0x00; /* Mode 0 */
+    vdp_control_port = 0x80;
+    vdp_control_port = 0x80; /* Colour table at 0x2000 */
+    vdp_control_port = 0x83;
+    vdp_control_port = 0x00; /* Pattern table at 0x0000 */
+    vdp_control_port = 0x84;
+
+    SG_loadTilePatterns (patterns, 0, sizeof (patterns));
+    SG_loadTileColours (colour_table, 0, sizeof (colour_table));
+    SG_loadSpritePatterns (&patterns [PATTERN_CURSOR_TMS * 2], 0, 72);
+    SG_setBackdropColor (12);                       /* Dark green */
+#elif defined (TARGET_SMS)
     SMS_loadBGPalette (palette);
     SMS_loadSpritePalette (palette);
     SMS_setSpritePaletteColor (1, RGB (2, 0, 0));   /* Dark Red */
     SMS_setSpritePaletteColor (2, RGB (2, 0, 0));   /* Dark Red */
     SMS_setSpritePaletteColor (3, RGB (3, 1, 1));   /* Light Red */
     SMS_setBGPaletteColor (4, RGB (2, 2, 3));       /* Light Lavender */
+    SMS_setBackdropColor (0);
+    SMS_loadTiles (patterns, 0, sizeof (patterns));
+    SMS_useFirstHalfTilesforSprites (true);
 #elif defined (TARGET_GG)
     GG_loadBGPalette (palette);
     GG_loadSpritePalette (palette);
@@ -390,15 +414,16 @@ void main (void)
     GG_setSpritePaletteColor (2, RGB (8, 0, 0));    /* Dark Red */
     GG_setSpritePaletteColor (3, RGB (15, 4, 4));   /* Light Red */
     GG_setBGPaletteColor (4, RGB (12, 12,  15));    /* Light Lavender */
-#endif
-
     SMS_setBackdropColor (0);
     SMS_loadTiles (patterns, 0, sizeof (patterns));
     SMS_useFirstHalfTilesforSprites (true);
+#endif
+
     SMS_initSprites ();
     SMS_copySpritestoSAT ();
 
     draw_reset (0, 24);
+
     draw_title ();
 
     /* Initialise value defaults */
@@ -447,13 +472,20 @@ void main (void)
                    gui_state.gui [gui_state.current_element].cursor_w,
                    gui_state.gui [gui_state.current_element].cursor_h);
 
+#ifndef TARGET_SG
     SMS_setFrameInterruptHandler (frame_interrupt);
+#endif
+
     SMS_displayOn ();
 
     /* Main loop */
     while (true)
     {
         SMS_waitForVBlank ();
+#ifdef TARGET_SG
+        frame_interrupt ();
+#endif
+
         uint16_t key_pressed = SMS_getKeysPressed ();
         uint16_t key_released = SMS_getKeysReleased ();
         uint16_t key_status = SMS_getKeysStatus ();
@@ -493,7 +525,7 @@ void main (void)
                 uint16_t note = notes [gui_state.keyboard_key - 1];
                 draw_keyboard_update (gui_state.keyboard_key - 1, true);
 
-                for (int channel = 0; channel < (CHANNEL_OFFSET * 3); channel += CHANNEL_OFFSET)
+                for (int channel = 0; channel < (ELEMENTS_PER_CHANNEL * 3); channel += ELEMENTS_PER_CHANNEL)
                 {
                     if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
                     {
@@ -534,6 +566,7 @@ void main (void)
         /* Key-down / key-up events on the keyboard */
         if (gui_state.current_element == ELEMENT_KEYBOARD)
         {
+#ifndef TARGET_SG
             if (key_pressed & PORT_A_KEY_MASK)
             {
 #ifdef TARGET_SMS
@@ -550,8 +583,9 @@ void main (void)
                 GG_setBGPaletteColor (4, RGB (10, 10, 15));    /* Light Lavender */
 #endif
             }
+#endif
 
-            for (int channel = 0; channel < (CHANNEL_OFFSET * 4); channel += CHANNEL_OFFSET)
+            for (int channel = 0; channel < (ELEMENTS_PER_CHANNEL * 4); channel += ELEMENTS_PER_CHANNEL)
             {
                 if (gui_state.element_values [ELEMENT_CH0_MODE_KEYBOARD + channel])
                 {
@@ -620,4 +654,6 @@ void main (void)
     }
 }
 
+#if defined (TARGET_SMS) || defined (TARGET_GG)
 SMS_EMBED_SEGA_ROM_HEADER(9999, 0);
+#endif

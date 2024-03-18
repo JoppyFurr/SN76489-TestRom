@@ -5,7 +5,13 @@
 
 #include <stdint.h>
 
+#ifdef TARGET_SG
+#include "SGlib.h"
+#include "SMSlib_compat.h"
+#define PATTERN_CURSOR 0
+#else
 #include "SMSlib.h"
+#endif
 
 #include "cursor.h"
 #include "../tile_data/pattern_index.h"
@@ -45,9 +51,14 @@ static void cursor_draw (void)
     SMS_initSprites ();
 
     /* The (x, y) coordinate refers to the area inside the cursor,
-     * so subtract the cursor's width */
+     * so subtract the cursor's width. The cursor needs to be offset
+     * by an extra pixel on the SG-1000. */
     uint8_t x = cursor_x - 3;
+#ifdef TARGET_SG
+    uint8_t y = cursor_y - 4;
+#else
     uint8_t y = cursor_y - 3;
+#endif
 
     /* Top corners */
     SMS_addSprite (x,                y, PATTERN_CURSOR + 0);
@@ -57,12 +68,21 @@ static void cursor_draw (void)
     SMS_addSprite (x,                y + cursor_h - 2, PATTERN_CURSOR + 6);
     SMS_addSprite (x + cursor_w - 2, y + cursor_h - 2, PATTERN_CURSOR + 8);
 
+#ifdef TARGET_SG
+    /* SG-1000 is limited to four sprites per line. Centre
+     * the gap by placing one middle section each on the left and right. */
+    SMS_addSprite (x + 8,             y,                PATTERN_CURSOR + 1);
+    SMS_addSprite (x + cursor_w - 10, y,                PATTERN_CURSOR + 1);
+    SMS_addSprite (x + 8,             y + cursor_h - 2, PATTERN_CURSOR + 7);
+    SMS_addSprite (x + cursor_w - 10, y + cursor_h - 2, PATTERN_CURSOR + 7);
+#else
     /* Top & bottom edges */
     for (int16_t filler = x + 8; filler < (x + cursor_w - 2); filler += 8)
     {
         SMS_addSprite (filler, y,                PATTERN_CURSOR + 1);
         SMS_addSprite (filler, y + cursor_h - 2, PATTERN_CURSOR + 7);
     }
+#endif
 
     /* Left & right edges */
     for (int16_t filler = y + 8; filler < (y + cursor_h - 2); filler += 8)

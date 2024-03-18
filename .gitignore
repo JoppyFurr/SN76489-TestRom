@@ -1,4 +1,5 @@
 # Ignore build artefacts and output
+*.sg
 *.gg
 *.sms
 *.zip
