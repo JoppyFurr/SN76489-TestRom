@@ -19,6 +19,9 @@ typedef uint16_t pattern_index_t;
 #include "../tile_data/pattern_index.h"
 
 #ifdef TARGET_SG
+/* Possibly a compiler bug: We get warnings about overflows in implicit
+ * constant conversions. For now, just disable this warning. */
+#pragma disable_warning 158
 #define PATTERN_BUTTON          PATTERN_BUTTON_TMS
 #define PATTERN_DIGITS          PATTERN_DIGITS_TMS
 #define PATTERN_FOOTER          PATTERN_FOOTER_TMS
