@@ -13,6 +13,11 @@ SGlib="${devkitSMS}/SGlib"
 ihx2sms="${devkitSMS}/ihx2sms/Linux/ihx2sms"
 sneptile="./tools/Sneptile-0.3.0/Sneptile"
 
+# SC-3000 Tape Support
+crt0_sc_tape="./tools/crt0_sc_tape"
+SGlib_sc_tape="./tools/SGlib_sc_tape"
+tapewave="./tools/SC-TapeWave/tapewave"
+
 build_sneptile ()
 {
     # Early return if we've already got an up-to-date build
@@ -29,6 +34,23 @@ build_sneptile ()
         cd "tools/Sneptile-0.3.0"
         ./build.sh
     )
+}
+
+
+build_tapewave ()
+{
+    # Early return if we've already got an up-to-date build
+    if [ -e $tapewave -a "./tools/SC-TapeWave/source/main.c" -ot $tapewave ]
+    then
+        return
+    fi
+
+    echo "Building SC-TapeWave..."
+    (
+        cd "tools/SC-TapeWave"
+        ./build.sh
+    )
+    return
 }
 
 
@@ -157,7 +179,7 @@ build_sn76489_test_rom_sg ()
     for file in cursor draw register key_interface main
     do
         echo "   -> ${file}.c"
-        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SGlib}/src \
+        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} --peep-file ${devkitSMS}/SGlib/peep-rules.txt -I ${SGlib}/src \
             -o "build/${file}.rel" "source/${file}.c" || exit 1
     done
 
@@ -173,9 +195,74 @@ build_sn76489_test_rom_sg ()
     echo "  Done"
 }
 
+
+# Parameter {1} - 'PAL' or 'NTSC'
+build_sn76489_test_rom_sc_tape ()
+{
+    echo "Building SN76489 Test ROM for SC-3000 Tape (${1})..."
+    rm -rf build tile_data
+
+    echo "  Generating tile data..."
+    mkdir -p tile_data
+    (
+        # Note, tiles are organized so that similar-coloured files are
+        # together, as they can share a mode-0 colour-table entry.
+        $sneptile --mode-0 --output tile_data \
+            tiles/empty_tms.png \
+            tiles/keys_outline_tms.png \
+            tiles/title_tms.png \
+            tiles/button_tms.png \
+            tiles/digits_tms.png \
+            tiles/led_tms.png \
+            tiles/labels_tms.png \
+            tiles/cursor_tms.png \
+            tiles/keys_active_tms.png \
+            tiles/keys_inactive_tms.png \
+            tiles/footer_tms.png
+    )
+
+    mkdir -p build
+    echo "  Compiling..."
+    for file in cursor draw register key_interface main
+    do
+        echo "   -> ${file}.c"
+        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} --peep-file ${devkitSMS}/SGlib/peep-rules.txt -I ${SGlib}/src \
+            -o "build/${file}.rel" "source/${file}.c" || exit 1
+    done
+
+    # Memory layout:
+    #
+    #   0x0000 -- 0x7fff BASIC ROM
+    #   0x8000 -- 0x97ff RAM, previously reserved for use by BASIC
+    #   0x9800 -- 0xc800 Program storage. 12 kB for BASIC IIIa, or 26 kB for BASIC IIIb
+    #
+    # A special crt0 is used to handle the new addresses, and a special SGlib is used
+    # to poll for the VDP interrupt status bit.
+
+    echo ""
+    echo "  Linking..."
+    ${sdcc} -o build/SN76489_TestRom_${1}_tape.ihx -mz80 --no-std-crt0 --code-loc 0x9800 --data-loc 0x8000 \
+        ${crt0_sc_tape}/crt0_sg.rel build/*.rel ${SGlib_sc_tape}/SGlib.rel || exit 1
+
+    echo ""
+    echo "  Generating ROM..."
+    # For now, just use ihx2sms as we've already got a copy. In the future, another tool may give
+    # a better filesize as we don't really want it rounded to the nearest 16k multiple.
+    ${ihx2sms} build/SN76489_TestRom_${1}_tape.ihx build/SN76489_TestRom_${1}_tape.sg || exit 1
+    dd if=build/SN76489_TestRom_${1}_tape.sg of=build/SN76489_TestRom_${1}_trimmed.sg bs=1K skip=38
+    ${tapewave} "SN76489 TestRom" build/SN76489_TestRom_${1}_trimmed.sg SN76489_TestRom_${1}.wav
+
+    echo ""
+    echo "  Done"
+}
+
 build_sneptile
 build_sn76489_test_rom_sms PAL
 build_sn76489_test_rom_sms NTSC
 build_sn76489_test_rom_gg
 build_sn76489_test_rom_sg PAL
 build_sn76489_test_rom_sg NTSC
+
+build_tapewave
+build_sn76489_test_rom_sc_tape PAL
+build_sn76489_test_rom_sc_tape NTSC
