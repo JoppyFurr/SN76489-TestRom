@@ -14,8 +14,6 @@ ihx2sms="${devkitSMS}/ihx2sms/Linux/ihx2sms"
 sneptile="./tools/Sneptile-0.3.0/Sneptile"
 
 # SC-3000 Tape Support
-crt0_sc_tape="./tools/crt0_sc_tape"
-SGlib_sc_tape="./tools/SGlib_sc_tape"
 tapewave="./tools/SC-TapeWave/tapewave"
 
 build_sneptile ()
@@ -86,16 +84,16 @@ build_sn76489_test_rom_sms ()
     do
         echo "   -> ${file}.c"
         ${sdcc} -c -mz80 -DTARGET_SMS -DTARGET_${1} --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
-            -o "build/${file}.rel" "source/${file}.c" || exit 1
+            -o "build/${file}.rel" "source/${file}.c"
     done
 
     echo ""
     echo "  Linking..."
-    ${sdcc} -o build/SN76489_TestRom_${1}.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib.lib || exit 1
+    ${sdcc} -o build/SN76489_TestRom_${1}.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib.lib
 
     echo ""
     echo "  Generating ROM..."
-    ${ihx2sms} build/SN76489_TestRom_${1}.ihx SN76489_TestRom_${1}.sms || exit 1
+    ${ihx2sms} build/SN76489_TestRom_${1}.ihx SN76489_TestRom_${1}.sms
 
     echo ""
     echo "  Done"
@@ -133,16 +131,16 @@ build_sn76489_test_rom_gg ()
     do
         echo "   -> ${file}.c"
         ${sdcc} -c -mz80 -DTARGET_GG -DTARGET_NTSC --peep-file ${devkitSMS}/SMSlib/src/peep-rules.txt -I ${SMSlib}/src \
-            -o "build/${file}.rel" "source/${file}.c" || exit 1
+            -o "build/${file}.rel" "source/${file}.c"
     done
 
     echo ""
     echo "  Linking..."
-    ${sdcc} -o build/SN76489_TestRom.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib_GG.lib || exit 1
+    ${sdcc} -o build/SN76489_TestRom.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sms.rel build/*.rel ${SMSlib}/SMSlib_GG.lib
 
     echo ""
     echo "  Generating ROM..."
-    ${ihx2sms} build/SN76489_TestRom.ihx SN76489_TestRom.gg || exit 1
+    ${ihx2sms} build/SN76489_TestRom.ihx SN76489_TestRom.gg
 
     echo ""
     echo "  Done"
@@ -179,17 +177,16 @@ build_sn76489_test_rom_sg ()
     for file in cursor draw register key_interface main
     do
         echo "   -> ${file}.c"
-        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} --peep-file ${devkitSMS}/SGlib/peep-rules.txt -I ${SGlib}/src \
-            -o "build/${file}.rel" "source/${file}.c" || exit 1
+        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} -I ${SGlib}/src -o "build/${file}.rel" "source/${file}.c"
     done
 
     echo ""
     echo "  Linking..."
-    ${sdcc} -o build/SN76489_TestRom_${1}.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sg.rel build/*.rel ${SGlib}/SGlib.rel || exit 1
+    ${sdcc} -o build/SN76489_TestRom_${1}.ihx -mz80 --no-std-crt0 --data-loc 0xC000 ${devkitSMS}/crt0/crt0_sg.rel build/*.rel ${SGlib}/SGlib.rel
 
     echo ""
     echo "  Generating ROM..."
-    ${ihx2sms} build/SN76489_TestRom_${1}.ihx SN76489_TestRom_${1}.sg || exit 1
+    ${ihx2sms} build/SN76489_TestRom_${1}.ihx SN76489_TestRom_${1}.sg
 
     echo ""
     echo "  Done"
@@ -226,8 +223,7 @@ build_sn76489_test_rom_sc_tape ()
     for file in cursor draw register key_interface main
     do
         echo "   -> ${file}.c"
-        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} --peep-file ${devkitSMS}/SGlib/peep-rules.txt -I ${SGlib}/src \
-            -o "build/${file}.rel" "source/${file}.c" || exit 1
+        ${sdcc} -c -mz80 -DTARGET_SG -DTARGET_${1} -I ${SGlib}/src -o "build/${file}.rel" "source/${file}.c"
     done
 
     # Memory layout:
@@ -241,16 +237,15 @@ build_sn76489_test_rom_sc_tape ()
 
     echo ""
     echo "  Linking..."
-    ${sdcc} -o build/SN76489_TestRom_${1}_tape.ihx -mz80 --no-std-crt0 --code-loc 0x9800 --data-loc 0x8000 \
-        ${crt0_sc_tape}/crt0_sg.rel build/*.rel ${SGlib_sc_tape}/SGlib.rel || exit 1
+    ${sdcc} -o build/SN76489_TestRom_${1}_tape.ihx -mz80 --no-std-crt0 --code-loc 0x98a0 --data-loc 0x8000 \
+        ${devkitSMS}/crt0/crt0_BASIC.rel build/*.rel ${SGlib}/SGlib.rel
 
     echo ""
     echo "  Generating ROM..."
     # For now, just use ihx2sms as we've already got a copy. In the future, another tool may give
     # a better filesize as we don't really want it rounded to the nearest 16k multiple.
-    ${ihx2sms} build/SN76489_TestRom_${1}_tape.ihx build/SN76489_TestRom_${1}_tape.sg || exit 1
-    dd if=build/SN76489_TestRom_${1}_tape.sg of=build/SN76489_TestRom_${1}_trimmed.sg bs=1K skip=38
-    ${tapewave} "SN76489 TestRom" build/SN76489_TestRom_${1}_trimmed.sg SN76489_TestRom_${1}.wav
+    objcopy -Iihex -Obinary build/SN76489_TestRom_${1}_tape.ihx build/SN76489_TestRom_${1}_tape.bin
+    ${tapewave} "SN76489 TestRom" build/SN76489_TestRom_${1}_tape.bin SN76489_TestRom_${1}.wav
 
     echo ""
     echo "  Done"
